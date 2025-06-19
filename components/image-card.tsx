@@ -4,6 +4,15 @@ import { DBImage } from "@/lib/db/schema";
 import Image from "next/image";
 import { MatchBadge } from "./match-badge";
 import { Card } from "./ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { MoreVertical, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function ImageCard({
   image,
@@ -12,11 +21,60 @@ export function ImageCard({
   image: DBImage;
   similarity?: number;
 }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete "${image.title}"? This action cannot be undone.`
+      )
+    )
+      return;
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/delete-image?id=${image.id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        router.refresh();
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete image: ${error.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      alert("Failed to delete image. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card
       key={image.id}
       className="h-[250px] md:h-[450px] relative group rounded-lg overflow-hidden"
     >
+      {/* Three dots menu in top right */}
+      <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors">
+              <MoreVertical className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isDeleting ? "Deleting..." : "Delete"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div className="absolute inset-0 z-10">
         <span className="sr-only">View image</span>
       </div>
