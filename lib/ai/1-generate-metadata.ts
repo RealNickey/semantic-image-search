@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { createAzure } from "@ai-sdk/azure";
 import { generateObject } from "ai";
 import dotenv from "dotenv";
 import { z } from "zod";
@@ -6,6 +6,12 @@ import { ImageMetadata, writeAllMetadataToFile } from "./utils";
 import { list } from "@vercel/blob";
 
 dotenv.config();
+
+const azure = createAzure({
+  resourceName: "aswinjimson",
+  apiKey: process.env.AZURE_API_KEY!,
+  apiVersion: "2025-01-01-preview",
+});
 
 async function main() {
   const blobs = await list();
@@ -18,10 +24,12 @@ async function main() {
   for (const file of files) {
     console.clear();
     console.log(
-      `Generating description for ${file} (${files.indexOf(file) + 1}/${files.length})`,
+      `Generating description for ${file} (${files.indexOf(file) + 1}/${
+        files.length
+      })`
     );
     const result = await generateObject({
-      model: openai("gpt-4o"),
+      model: azure("gpt-4o"),
       schema: z.object({
         image: z.object({
           title: z.string().describe("an artistic title for the image"),

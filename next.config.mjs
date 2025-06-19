@@ -3,9 +3,11 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'bodo0tgbs4falkp7.public.blob.vercel-storage.com',
-        port: '',
+        protocol: "https",
+        hostname:
+          process.env.BLOB_HOSTNAME ||
+          "tpo2ibmx3wdtfg4k.public.blob.vercel-storage.com",
+        port: "",
       },
     ],
     minimumCacheTTL: 60,

@@ -1,7 +1,16 @@
-import { openai } from "@ai-sdk/openai";
+import { createAzure } from "@ai-sdk/azure";
 import { embed } from "ai";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const azure = createAzure({
+  resourceName: "aswinjimson",
+  apiKey: process.env.AZURE_API_KEY!,
+  apiVersion: "2023-05-15",
+});
 
 export type ImageMetadata = {
   path: string;
@@ -11,7 +20,7 @@ export type ImageMetadata = {
   };
 };
 
-export const embeddingModel = openai.embedding("text-embedding-3-small");
+export const embeddingModel = azure.embedding("text-embedding-3-small");
 
 /**
  * Asynchronously gets all `.jpg` files in the specified directory.
@@ -23,7 +32,7 @@ export async function getJpgFiles(dir: string): Promise<string[]> {
   try {
     const files = await fs.promises.readdir(dir);
     const jpgFiles = files.filter(
-      (file) => path.extname(file).toLowerCase() === ".jpg",
+      (file) => path.extname(file).toLowerCase() === ".jpg"
     );
     return jpgFiles;
   } catch (error) {
@@ -40,12 +49,12 @@ export async function getJpgFiles(dir: string): Promise<string[]> {
  */
 export async function writeAllMetadataToFile(
   metadataArray: ImageMetadata[],
-  outputPath: string,
+  outputPath: string
 ) {
   try {
     await fs.promises.writeFile(
       outputPath,
-      JSON.stringify(metadataArray, null, 2),
+      JSON.stringify(metadataArray, null, 2)
     );
     console.log(`All metadata written to ${outputPath}`);
   } catch (error) {
