@@ -2,6 +2,7 @@ import { CardGridSkeleton } from "@/components/card-grid-skeleton";
 import { SearchBox } from "@/components/search-box";
 import { SuspendedImageSearch } from "@/components/suspended-image-search";
 import { FileUpload } from "@/components/file-upload";
+import { ImageGenerator } from "@/components/image-generator";
 import { Suspense } from "react";
 
 export default async function Home({
@@ -20,8 +21,15 @@ export default async function Home({
             <SearchBox query={query} />
           </div>
         </div>
-        <div className="mb-4">
-          <FileUpload />
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-medium mb-2">Generate Image</h3>
+            <ImageGenerator />
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Upload Image</h3>
+            <FileUpload />
+          </div>
         </div>
       </aside>
 
