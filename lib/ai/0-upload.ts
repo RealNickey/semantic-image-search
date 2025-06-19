@@ -21,7 +21,9 @@ async function main() {
 
     console.clear();
     console.log(
-      `Uploading ${file} (${files.indexOf(file) + 1}/${files.length}) to Blob storage`,
+      `Uploading ${file} (${files.indexOf(file) + 1}/${
+        files.length
+      }) to Blob storage`
     );
     try {
       await put(file, fileContent, { access: "public" });

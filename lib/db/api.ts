@@ -71,12 +71,12 @@ export const getImages = async (
     if (cached) {
       return { images: cached };
     } else {
-      if (query === undefined || query.length < 3) {
+      if (query === undefined || query === "" || query.length < 3) {
         const allImages = await db
           .select(imagesWithoutEmbedding)
           .from(images)
           .limit(20);
-        await kv.set("all_images", JSON.stringify(allImages));
+        await kv.set("all_images", allImages);
         return { images: allImages };
       } else {
         const directMatches = await findImageByQuery(query);
@@ -88,7 +88,7 @@ export const getImages = async (
           })),
         );
 
-        await kv.set(formattedQuery, JSON.stringify(allMatches));
+        await kv.set(formattedQuery, allMatches);
         return { images: allMatches };
       }
     }
