@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Pocket</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .settings {
+      padding: 16px;
+      border-bottom: 1px solid #e1e5e9;
+      background: white;
+    }
+
+    .settings label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .settings input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .settings input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    .actions {
+      padding: 16px;
+      background: white;
+      border-bottom: 1px solid #e1e5e9;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5a6fd8;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    .btn-secondary:hover {
+      background: #dee2e6;
+    }
+
+    .images-container {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .images-header {
+      padding: 16px;
+      background: white;
+      border-bottom: 1px solid #e1e5e9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .images-header h3 {
+      font-size: 16px;
+      color: #495057;
+    }
+
+    .image-count {
+      background: #667eea;
+      color: white;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 16px;
+    }
+
+    .image-item {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .image-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+    }
+
+    .image-info {
+      padding: 8px;
+    }
+
+    .image-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 4px;
+      line-height: 1.3;      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .image-date {
+      font-size: 10px;
+      color: #868e96;
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      color: #868e96;
+    }
+
+    .no-images {
+      text-align: center;
+      padding: 40px 20px;
+      color: #868e96;
+    }
+
+    .no-images h4 {
+      margin-bottom: 8px;
+      color: #495057;
+    }
+
+    .status {
+      padding: 12px 16px;
+      margin: 0 16px 16px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🖼️ Image Pocket</h1>
+    <p>Save images to your semantic collection</p>
+  </div>
+
+  <div class="settings">
+    <label for="vercelUrl">Vercel App URL</label>
+    <input type="url" id="vercelUrl" placeholder="http://localhost:3000 or https://your-app.vercel.app">
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="saveAllImages">
+      📸 Save All Images from Page
+    </button>
+    <button class="btn btn-secondary" id="openWebApp">
+      🌐 Open Web App
+    </button>
+  </div>
+
+  <div id="status" class="status hidden"></div>
+
+  <div class="images-header">
+    <h3>Recent Images</h3>
+    <span class="image-count" id="imageCount">0</span>
+  </div>
+
+  <div class="images-container">
+    <div id="loading" class="loading hidden">
+      <div>Loading images...</div>
+    </div>
+    
+    <div id="noImages" class="no-images">
+      <h4>No images saved yet</h4>
+      <p>Right-click on any image and select "Save image to Pocket"</p>
+    </div>
+    
+    <div id="imageGrid" class="image-grid"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
