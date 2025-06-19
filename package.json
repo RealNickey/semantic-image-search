@@ -9,6 +9,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "clear-data": "tsx lib/ai/clear-data.ts",
     "upload": "tsx lib/ai/0-upload.ts",
     "generate-metadata": "tsx lib/ai/1-generate-metadata.ts",
     "embed-and-save": "tsx lib/ai/2-embed-and-save.ts"
