@@ -8,8 +8,9 @@ import { list } from "@vercel/blob";
 dotenv.config();
 
 const azure = createAzure({
-  resourceName: process.env.AZURE_RESOURCE_NAME!,
+  resourceName: "aswinjimson",
   apiKey: process.env.AZURE_API_KEY!,
+  apiVersion: "2025-01-01-preview",
 });
 
 async function main() {
@@ -28,7 +29,7 @@ async function main() {
       })`
     );
     const result = await generateObject({
-      model: azure(process.env.AZURE_GPT4O_DEPLOYMENT_NAME!),
+      model: azure("gpt-4o"),
       schema: z.object({
         image: z.object({
           title: z.string().describe("an artistic title for the image"),

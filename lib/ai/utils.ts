@@ -2,10 +2,14 @@ import { createAzure } from "@ai-sdk/azure";
 import { embed } from "ai";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const azure = createAzure({
-  resourceName: process.env.AZURE_RESOURCE_NAME!,
+  resourceName: "aswinjimson",
   apiKey: process.env.AZURE_API_KEY!,
+  apiVersion: "2023-05-15",
 });
 
 export type ImageMetadata = {
@@ -16,9 +20,7 @@ export type ImageMetadata = {
   };
 };
 
-export const embeddingModel = azure.embedding(
-  process.env.AZURE_EMBEDDING_DEPLOYMENT_NAME!
-);
+export const embeddingModel = azure.embedding("text-embedding-3-small");
 
 /**
  * Asynchronously gets all `.jpg` files in the specified directory.
