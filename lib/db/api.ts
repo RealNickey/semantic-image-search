@@ -21,7 +21,10 @@ const imagesWithoutEmbedding = {
 
 export const findSimilarContent = async (description: string) => {
   const embedding = await generateEmbedding(description);
-  const similarity = sql<number>`1 - (${cosineDistance(images.embedding, embedding)})`;
+  const similarity = sql<number>`1 - (${cosineDistance(
+    images.embedding,
+    embedding
+  )})`;
   const similarGuides = await db
     .select({ image: imagesWithoutEmbedding, similarity })
     .from(images)
@@ -39,8 +42,8 @@ export const findImageByQuery = async (query: string) => {
     .where(
       or(
         sql`title ILIKE ${"%" + query + "%"}`,
-        sql`description ILIKE ${"%" + query + "%"}`,
-      ),
+        sql`description ILIKE ${"%" + query + "%"}`
+      )
     );
   return result;
 };
@@ -50,8 +53,8 @@ function uniqueItemsByObject(items: DBImage[]): DBImage[] {
   const uniqueItems: DBImage[] = [];
 
   for (const item of items) {
-    if (!seenObjects.has(item.title)) {
-      seenObjects.add(item.title);
+    if (!seenObjects.has(item.id)) {
+      seenObjects.add(item.id);
       uniqueItems.push(item);
     }
   }
@@ -60,38 +63,37 @@ function uniqueItemsByObject(items: DBImage[]): DBImage[] {
 }
 
 export const getImages = async (
-  query?: string,
+  query?: string
 ): Promise<{ images: DBImage[]; error?: Error }> => {
   try {
-    const formattedQuery = query
-      ? "q:" + query?.replaceAll(" ", "_")
-      : "all_images";
+    // When no query is provided, get the latest images.
+    // We don't cache this as it's not a heavy query.
+    if (!query || query.length < 3) {
+      const allImages = await db
+        .select(imagesWithoutEmbedding)
+        .from(images)
+        .orderBy(desc(images.id))
+        .limit(20);
+      return { images: allImages };
+    }
 
+    const formattedQuery = `q:${query.replaceAll(" ", "_")}`;
     const cached = await kv.get<DBImage[]>(formattedQuery);
     if (cached) {
       return { images: cached };
-    } else {
-      if (query === undefined || query === "" || query.length < 3) {
-        const allImages = await db
-          .select(imagesWithoutEmbedding)
-          .from(images)
-          .limit(20);
-        await kv.set("all_images", allImages);
-        return { images: allImages };
-      } else {
-        const directMatches = await findImageByQuery(query);
-        const semanticMatches = await findSimilarContent(query);
-        const allMatches = uniqueItemsByObject(
-          [...directMatches, ...semanticMatches].map((image) => ({
-            ...image.image,
-            similarity: image.similarity,
-          })),
-        );
-
-        await kv.set(formattedQuery, allMatches);
-        return { images: allMatches };
-      }
     }
+
+    const directMatches = await findImageByQuery(query);
+    const semanticMatches = await findSimilarContent(query);
+    const allMatches = uniqueItemsByObject(
+      [...directMatches, ...semanticMatches].map((image) => ({
+        ...image.image,
+        similarity: image.similarity,
+      }))
+    );
+
+    await kv.set(formattedQuery, allMatches);
+    return { images: allMatches };
   } catch (e) {
     if (e instanceof Error) return { error: e, images: [] };
     return {
