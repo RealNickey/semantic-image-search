@@ -25,13 +25,18 @@ export const ImageSearch = ({
 
 const ImageGrid = ({ images }: { images: DBImage[] }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 relative">
-      {images.map((image) => (
-        <ImageCard
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {images.map((image, index) => (
+        <div
           key={"image_" + image.id}
-          image={image}
-          similarity={image.similarity}
-        />
+          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500 ease-out"
+          style={{ animationDelay: `${index * 100}ms` }}
+        >
+          <ImageCard
+            image={image}
+            similarity={image.similarity}
+          />
+        </div>
       ))}
     </div>
   );
