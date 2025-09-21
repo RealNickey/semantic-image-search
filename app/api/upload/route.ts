@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { images } from "@/lib/db/schema";
 import dotenv from "dotenv";
 import { getAIProviders } from "@/lib/ai/utils";
+import { revalidatePath } from "next/cache";
 
 dotenv.config();
 
@@ -77,6 +78,8 @@ export async function POST(request: NextRequest) {
       path: url,
       embedding,
     });
+    // Ensure RSC caches are invalidated so the new image shows up immediately
+    revalidatePath("/");
 
     return NextResponse.json({
       success: true,

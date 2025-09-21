@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { images } from "@/lib/db/schema";
 import dotenv from "dotenv";
 import { getAIProviders } from "@/lib/ai/utils";
+import { revalidatePath } from "next/cache";
 
 dotenv.config();
 
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
       // Store additional metadata as JSON in description if needed
       // or add new columns to schema
     });
+    revalidatePath("/");
 
     return NextResponse.json({
       success: true,

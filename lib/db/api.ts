@@ -116,8 +116,8 @@ export const getImages = async (
 
     try {
       if (kvClient) {
-        // cache for 5 minutes
-        await kvClient.set(formattedQuery, allMatches, { ex: 300 });
+        // cache for 1 minute to keep results fresh after new inserts
+        await kvClient.set(formattedQuery, allMatches, { ex: 60 });
       }
     } catch (e) {
       console.warn("KV set failed or not configured:", e);

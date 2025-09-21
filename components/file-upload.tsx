@@ -4,6 +4,7 @@ import { useFileInput } from "@/hooks/use-file-input";
 import { Button } from "./ui/button";
 import { Alert } from "./ui/alert";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function FileUpload() {
   const { fileInputRef, handleFileSelect, fileName, error, clearFile } = useFileInput({
@@ -13,6 +14,7 @@ export function FileUpload() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const router = useRouter();
 
   // Auto-hide success message after 3 seconds
   useEffect(() => {
@@ -52,8 +54,10 @@ export function FileUpload() {
         throw new Error(result.error || "Upload failed");
       }
 
-      setUploadSuccess(true);
-      clearFile(); // Clear file after successful upload
+  setUploadSuccess(true);
+  clearFile(); // Clear file after successful upload
+  // Refresh server components to show the new image immediately
+  router.refresh();
     } catch (err: any) {
       console.error("Upload error:", err);
       setUploadError(err.message || "Failed to upload image");
