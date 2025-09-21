@@ -1,16 +1,39 @@
 import { createAzure } from "@ai-sdk/azure";
 import { embed } from "ai";
+import { openai } from "@ai-sdk/openai";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const azure = createAzure({
-  resourceName: "aswinjimson",
-  apiKey: process.env.AZURE_API_KEY!,
-  apiVersion: "2023-05-15",
-});
+// Prefer OpenAI when OPENAI_API_KEY is available; otherwise use Azure with env-based config
+export function getAIProviders() {
+  const useOpenAI = !!process.env.OPENAI_API_KEY;
+  if (useOpenAI) {
+    return {
+      provider: "openai" as const,
+      chat: openai("gpt-4o"),
+      embedding: openai.embedding("text-embedding-3-small"),
+    };
+  }
+
+  const resourceName =
+    process.env.AZURE_OPENAI_RESOURCE || process.env.AZURE_RESOURCE_NAME;
+  const apiKey = process.env.AZURE_API_KEY;
+  const apiVersion = process.env.AZURE_OPENAI_API_VERSION || "2023-05-15";
+  if (!resourceName || !apiKey) {
+    throw new Error(
+      "No AI provider configured. Set OPENAI_API_KEY for OpenAI or AZURE_API_KEY and AZURE_OPENAI_RESOURCE for Azure."
+    );
+  }
+  const azure = createAzure({ resourceName, apiKey, apiVersion });
+  return {
+    provider: "azure" as const,
+    chat: azure("gpt-4o"),
+    embedding: azure.embedding("text-embedding-3-small"),
+  };
+}
 
 export type ImageMetadata = {
   path: string;
@@ -20,7 +43,7 @@ export type ImageMetadata = {
   };
 };
 
-export const embeddingModel = azure.embedding("text-embedding-3-small");
+export const embeddingModel = getAIProviders().embedding;
 
 /**
  * Asynchronously gets all `.jpg` files in the specified directory.

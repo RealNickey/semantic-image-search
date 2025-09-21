@@ -11,28 +11,42 @@ import {
 import { db } from ".";
 import { DBImage, images } from "./schema";
 import { generateEmbedding } from "../ai/utils";
-import { kv } from "@vercel/kv";
+let kvClient: typeof import("@vercel/kv")["kv"] | undefined;
+try {
+  // Lazy import KV; allow running without KV configured
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  kvClient = require("@vercel/kv").kv;
+} catch {
+  // no-op; KV not available
+}
 
-const { embedding: _, ...rest } = getTableColumns(images);
+// Select all image columns except the vector embedding to lighten payloads,
+// but keep a dummy "embedding" field to satisfy typing when mapping to DBImage
+const { embedding: _embedding, ...rest } = getTableColumns(images);
 const imagesWithoutEmbedding = {
   ...rest,
+  // Return an empty integer array for embedding to avoid transferring vector data
   embedding: sql<number[]>`ARRAY[]::integer[]`,
-};
+} as const;
 
 export const findSimilarContent = async (description: string) => {
-  const embedding = await generateEmbedding(description);
-  const similarity = sql<number>`1 - (${cosineDistance(
-    images.embedding,
-    embedding
-  )})`;
-  const similarGuides = await db
-    .select({ image: imagesWithoutEmbedding, similarity })
-    .from(images)
-    .where(gt(similarity, 0.28)) // experiment with this value based on your embedding model
-    .orderBy((t) => desc(t.similarity))
-    .limit(10);
-
-  return similarGuides;
+  try {
+    const embedding = await generateEmbedding(description);
+    const similarity = sql<number>`1 - (${cosineDistance(
+      images.embedding,
+      embedding
+    )})`;
+    const similar = await db
+      .select({ image: imagesWithoutEmbedding, similarity })
+      .from(images)
+      .where(gt(similarity, 0.28))
+      .orderBy((t) => desc(t.similarity))
+      .limit(10);
+    return similar;
+  } catch (e) {
+    console.error("Semantic search failed; falling back to direct query:", e);
+    return [] as Array<{ image: DBImage; similarity: number }>;
+  }
 };
 
 export const findImageByQuery = async (query: string) => {
@@ -78,9 +92,15 @@ export const getImages = async (
     }
 
     const formattedQuery = `q:${query.replaceAll(" ", "_")}`;
-    const cached = await kv.get<DBImage[]>(formattedQuery);
-    if (cached) {
-      return { images: cached };
+    try {
+      if (kvClient) {
+        const cached = await kvClient.get<DBImage[]>(formattedQuery);
+        if (cached) {
+          return { images: cached };
+        }
+      }
+    } catch (e) {
+      console.warn("KV get failed or not configured:", e);
     }
 
     const directMatches = await findImageByQuery(query);
@@ -92,7 +112,13 @@ export const getImages = async (
       }))
     );
 
-    await kv.set(formattedQuery, allMatches);
+    try {
+      if (kvClient) {
+        await kvClient.set(formattedQuery, allMatches);
+      }
+    } catch (e) {
+      console.warn("KV set failed or not configured:", e);
+    }
     return { images: allMatches };
   } catch (e) {
     if (e instanceof Error) return { error: e, images: [] };
