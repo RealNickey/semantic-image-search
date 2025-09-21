@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAzure } from "@ai-sdk/azure";
 import { put } from "@vercel/blob";
 import { embed, generateObject } from "ai";
 import { z } from "zod";
@@ -7,16 +6,10 @@ import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { images } from "@/lib/db/schema";
 import dotenv from "dotenv";
+import { getAIProviders } from "@/lib/ai/utils";
+import { revalidatePath } from "next/cache";
 
 dotenv.config();
-
-const azureGPT = createAzure({
-  resourceName: "aswinjimson",
-  apiKey: process.env.AZURE_API_KEY!,
-  apiVersion: "2025-01-01-preview",
-});
-
-const embeddingModel = azureGPT.embedding("text-embedding-3-small");
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,8 +80,10 @@ export async function POST(request: NextRequest) {
       contentType: "image/png",
     });
     // 3. Generate metadata for the generated image
+    const ai = getAIProviders();
+    const embeddingModel = ai.embedding;
     const metadataResult = await generateObject({
-      model: azureGPT("gpt-4o"),
+      model: ai.chat,
       schema: z.object({
         image: z.object({
           title: z.string().describe("an artistic title for the image"),
@@ -122,17 +117,21 @@ export async function POST(request: NextRequest) {
     });
 
     // 5. Save to database
+    const newId = nanoid();
     await db.insert(images).values({
-      id: nanoid(),
+      id: newId,
       title: metadataResult.object.image.title,
       description: metadataResult.object.image.description,
       path: uploadedUrl,
       embedding,
     });
+    // Invalidate cache so refreshed RSC pulls in new row immediately
+    revalidatePath("/");
 
     return NextResponse.json({
       success: true,
       image: {
+        id: newId,
         url: uploadedUrl,
         title: metadataResult.object.image.title,
         description: metadataResult.object.image.description,

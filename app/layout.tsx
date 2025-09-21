@@ -3,6 +3,8 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TransitionProvider } from "@/lib/hooks/use-shared-transition";
+import { PendingImagesProvider } from "@/lib/hooks/pending-images";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Semantic Image Search Demo",
@@ -20,7 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn("font-sans antialiased", GeistSans.variable)}>
-        <TransitionProvider>{children}</TransitionProvider>
+        <TransitionProvider>
+          <PendingImagesProvider>{children}</PendingImagesProvider>
+        </TransitionProvider>
+        {/* Global toast notifications */}
+        <Toaster richColors position="top-right" closeButton />
       </body>
     </html>
   );

@@ -39,6 +39,12 @@ export function SearchBox({
     } else {
       params.delete("q");
     }
+    // Cache last query locally for instant back/forward feel
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("lastQuery", term);
+      }
+    } catch {}
     startTransition &&
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
@@ -57,54 +63,54 @@ export function SearchBox({
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="w-full mx-auto mb-4">
-        <div className="relative flex items-center space-x-2">
-          <div className="relative w-full flex items-center">
-            <SearchIcon className="absolute left-4 w-5 h-5 text-gray-500" />
-            <Input
-              disabled={disabled}
-              ref={inputRef}
-              defaultValue={query ?? ""}
-              minLength={3}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (newValue.length > 2) {
-                  setIsValid(true);
-                  handleSearch(newValue);
-                } else if (newValue.length === 0) {
-                  handleSearch(newValue);
-                  setIsValid(false);
-                } else {
-                  setIsValid(false);
-                }
-              }}
-              className={
-                "text-base w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500"
+    <div className="flex flex-col space-y-3">
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="relative flex items-center">
+          <SearchIcon className="absolute left-4 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200 z-10" />
+          <Input
+            disabled={disabled}
+            ref={inputRef}
+            defaultValue={query ?? ""}
+            minLength={3}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.length > 2) {
+                setIsValid(true);
+                handleSearch(newValue);
+              } else if (newValue.length === 0) {
+                handleSearch(newValue);
+                setIsValid(false);
+              } else {
+                setIsValid(false);
               }
-              placeholder="Search..."
-            />
-            {q.length > 0 ? (
-              <Button
-                className="absolute right-2 text-gray-400 rounded-full h-8 w-8"
-                variant="ghost"
-                type="reset"
-                size={"icon"}
-                onClick={resetQuery}
-              >
-                <X height="20" width="20" />
-              </Button>
-            ) : null}
-          </div>
+            }}
+            className="w-full pl-12 pr-12 py-3 bg-background/50 backdrop-blur-sm border-border/50 rounded-lg 
+                     focus:border-primary/50 focus:ring-2 focus:ring-primary/20 
+                     transition-all duration-200 ease-in-out
+                     placeholder:text-muted-foreground/70"
+            placeholder="Search for anything..."
+          />
+          {q.length > 0 && (
+            <Button
+              className="absolute right-2 text-muted-foreground hover:text-foreground rounded-full h-8 w-8 
+                       hover:bg-muted/50 transition-all duration-200 transform hover:scale-105"
+              variant="ghost"
+              type="reset"
+              size={"icon"}
+              onClick={resetQuery}
+            >
+              <X height="16" width="16" />
+            </Button>
+          )}
         </div>
-        {!isValid ? (
-          <div className="text-xs pt-2 text-destructive">
-            Query must be 3 characters or longer
-          </div>
-        ) : (
-          <div className="h-6" />
-        )}
       </div>
+
+      {!isValid && (
+        <div className="text-xs text-destructive animate-in slide-in-from-top-1 duration-200">
+          Query must be 3 characters or longer
+        </div>
+      )}
     </div>
   );
 }
