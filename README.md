@@ -1,5 +1,5 @@
 <a href="https://semantic-search.vercel.app">
-  <img alt="Next.js 14 and App Router Semantic Search." src="https://semantic-image-search.vercel.app/opengraph-image.png">
+  <img alt="Next.js 15 and App Router Semantic Search." src="https://semantic-image-search.vercel.app/opengraph-image.png">
   <h1 align="center">Semantic Image Search</h1>
 </a>
 
@@ -222,6 +222,26 @@ This repository includes a Chrome extension called "Image Pocket" that allows yo
 - **Click extension icon** → View recent saves and bulk save options
 
 For more details, see the [Chrome Extension README](chrome-extension/README.md).
+
+## Additional Scripts
+
+This project includes several utility scripts:
+
+```bash
+# Database management
+pnpm run db:generate    # Generate database schema changes
+pnpm run db:push        # Push schema changes to database
+pnpm run db:studio      # Open Drizzle Studio for database management
+
+# Development
+pnpm run dev            # Start development server
+pnpm run build          # Build for production
+pnpm run start          # Start production server
+pnpm run lint           # Run ESLint
+
+# Extension
+pnpm run setup-extension # Prepare Chrome extension for installation
+```
 
 ## Authors
 
