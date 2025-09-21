@@ -11,14 +11,8 @@ import {
 import { db } from ".";
 import { DBImage, images } from "./schema";
 import { generateEmbedding } from "../ai/utils";
-let kvClient: typeof import("@vercel/kv")["kv"] | undefined;
-try {
-  // Lazy import KV; allow running without KV configured
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  kvClient = require("@vercel/kv").kv;
-} catch {
-  // no-op; KV not available
-}
+import { kv as vercelKV } from "@vercel/kv";
+const kvClient = vercelKV as typeof import("@vercel/kv")["kv"] | undefined;
 
 // Select all image columns except the vector embedding to lighten payloads,
 // but keep a dummy "embedding" field to satisfy typing when mapping to DBImage
