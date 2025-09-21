@@ -87,7 +87,7 @@ export const getImages = async (
         .select(imagesWithoutEmbedding)
         .from(images)
         .orderBy(desc(images.id))
-        .limit(20);
+        .limit(16);
       return { images: allImages };
     }
 
@@ -103,8 +103,10 @@ export const getImages = async (
       console.warn("KV get failed or not configured:", e);
     }
 
-    const directMatches = await findImageByQuery(query);
-    const semanticMatches = await findSimilarContent(query);
+    const [directMatches, semanticMatches] = await Promise.all([
+      findImageByQuery(query),
+      findSimilarContent(query),
+    ]);
     const allMatches = uniqueItemsByObject(
       [...directMatches, ...semanticMatches].map((image) => ({
         ...image.image,
@@ -114,7 +116,8 @@ export const getImages = async (
 
     try {
       if (kvClient) {
-        await kvClient.set(formattedQuery, allMatches);
+        // cache for 5 minutes
+        await kvClient.set(formattedQuery, allMatches, { ex: 300 });
       }
     } catch (e) {
       console.warn("KV set failed or not configured:", e);
