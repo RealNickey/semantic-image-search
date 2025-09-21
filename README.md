@@ -4,11 +4,12 @@
 </a>
 
 <p align="center">
-  An open-source AI semantic image search app template built with Next.js, the Vercel AI SDK, OpenAI, Vercel Postgres, Vercel Blob and Vercel KV.
+  An open-source AI semantic image search app template built with Next.js, the Vercel AI SDK, Azure OpenAI, Vercel Postgres, Vercel Blob and Vercel KV. Includes a Chrome extension for seamless image collection.
 </p>
 
 <p align="center">
   <a href="#features"><strong>Features</strong></a> ·
+  <a href="#chrome-extension"><strong>Chrome Extension</strong></a> ·
   <a href="#model-providers"><strong>Model Providers</strong></a> ·
   <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
   <a href="#running-locally"><strong>Running locally</strong></a> ·
@@ -21,30 +22,93 @@
 - [Next.js](https://nextjs.org) App Router
 - React Server Components (RSCs), Suspense, and Server Actions
 - [Vercel AI SDK](https://sdk.vercel.ai/docs) for multimodal prompting, generating & embedding image metadata, and streaming images from Server to Client
-- Support for OpenAI (default), Gemini, Anthropic, Cohere, or custom AI chat models
+- Support for Azure OpenAI (default), OpenAI, Gemini, Anthropic, Cohere, or custom AI chat models
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - [Radix UI](https://radix-ui.com) for headless component primitives
 - Query caching with [Vercel KV](https://vercel.com/storage/kv)
-- Embeddings powered by [Vercel Postgres](https://vercel.com/storage/kv), [pgvector](https://github.com/pgvector/pgvector-node#drizzle-orm), and [Drizzle ORM](https://orm.drizzle.team/)
+- Embeddings powered by [Vercel Postgres](https://vercel.com/storage/postgres), [pgvector](https://github.com/pgvector/pgvector-node#drizzle-orm), and [Drizzle ORM](https://orm.drizzle.team/)
 - File (image) storage with [Vercel Blob](https://vercel.com/storage/blob)
+- Chrome Extension for seamless image collection from any website
+
+## Chrome Extension
+
+This project includes a powerful Chrome extension called "Image Pocket" that functions like Pocket but for images. Save images from any website directly to your semantic image search collection.
+
+### Extension Features
+
+- **Right-click to save**: Right-click on any image and select "Save image to Pocket"
+- **Bulk save**: Save all suitable images from a webpage with one click
+- **Hover to save**: Hover over images to see a quick save button
+- **Visual feedback**: Get instant notifications when images are saved
+- **Recent images**: View your recently saved images in the extension popup
+- **Semantic search**: All saved images are processed with AI for better searchability
+- **Smart filtering**: Automatically filters out small images, icons, and decorative elements
+
+### Installing the Chrome Extension
+
+1. **Build the Next.js app** (if not already done):
+   ```bash
+   npm run build
+   # or
+   pnpm build
+   ```
+
+2. **Set up environment variables**:
+   Make sure your `.env.local` file contains the required Azure configuration (see Setup section below).
+
+3. **Load the extension in Chrome**:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked"
+   - Select the `chrome-extension` folder from this project
+
+4. **Configure the extension**:
+   - Click the extension icon in Chrome
+   - Set your Vercel app URL (e.g., `http://localhost:3000` or `https://your-app.vercel.app`)
+
+For detailed extension documentation, see the [Chrome Extension README](chrome-extension/README.md).
 
 ## Model Providers
 
-This template ships with OpenAI `GPT-4o` as the default. However, thanks to the [Vercel AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [Gemini](https://gemini.google.com/), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+This template ships with Azure OpenAI `GPT-4o` as the default. However, thanks to the [Vercel AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Gemini](https://gemini.google.com/), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
 
 ## Deploy Your Own
 
 You can deploy your own version of the Semantic Image Search App to Vercel with one click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fsemantic-image-search&env=OPENAI_API_KEY&envDescription=OpenAI%20key%20needed&envLink=https%3A%2F%2Fplatform.openai.com%2Fdocs%2Foverview)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FRealNickey%2Fsemantic-image-search&env=AZURE_API_KEY,BLOB_READ_WRITE_TOKEN&envDescription=Azure%20OpenAI%20API%20key%20and%20Vercel%20Blob%20token%20needed&envLink=https%3A%2F%2Flearn.microsoft.com%2Fen-us%2Fazure%2Fai-services%2Fopenai%2Fquickstart)
 
 ## Setup
+
+Before setting up the databases, you'll need to configure Azure OpenAI services.
+
+### Azure OpenAI Configuration
+
+1. **Create an Azure OpenAI resource**:
+   - Go to the [Azure Portal](https://portal.azure.com)
+   - Create a new Azure OpenAI resource
+   - Note your resource name, API key, and endpoint
+
+2. **Deploy required models**:
+   - Deploy a GPT-4o model (for image understanding and metadata generation)
+   - Deploy a text-embedding-3-small model (for semantic search)
+   - Note the deployment names for both models
+
+3. **Configure environment variables**:
+   Update your `.env` file with:
+   ```
+   AZURE_RESOURCE_NAME=your-azure-resource-name
+   AZURE_API_KEY=your-azure-api-key
+   AZURE_GPT4O_DEPLOYMENT_NAME=your-gpt4o-deployment-name
+   AZURE_EMBEDDING_DEPLOYMENT_NAME=your-text-embedding-3-small-deployment-name
+   ```
+
 ### Creating a KV Database Instance
 
 Follow the steps outlined in the [quick start guide](https://vercel.com/docs/storage/vercel-kv/quickstart#create-a-kv-database) provided by Vercel. This guide will assist you in creating and configuring your KV database instance on Vercel, enabling your application to interact with it.
 
-Remember to update your environment variables (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN`) in the `.env` file with the appropriate credentials provided during the KV database setup.
+Remember to update your environment variables (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) in the `.env` file with the appropriate credentials provided during the KV database setup.
 
 ### Creating a Postgres Database Instance
 
@@ -55,7 +119,7 @@ Once you have instantiated your Vercel Postgres instance, run the following code
 CREATE EXTENSION vector;
 ```
 
-Remember to update your environment variables (`POSTGRES_URL`, `POSTGRES_PRISMA_URL`, `POSTGRES_URL_NON_POOLING`, `POSTGRES_USER`, `POSTGRES_HOST`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE`) in the `.env` file with the appropriate credentials provided during the Postgres database setup.
+Remember to update your environment variable (`POSTGRES_URL`) in the `.env` file with the appropriate connection string provided during the Postgres database setup.
 
 ### Creating a Blob Instance
 
@@ -68,7 +132,7 @@ Remember to update your environment variable (`BLOB_READ_WRITE_TOKEN`) in the `.
 
 You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js Semantic Image Search. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
+> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various Azure OpenAI and authentication provider accounts.
 
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
@@ -78,8 +142,8 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 pnpm install
 ```
 
-## Add OpenAI API Key
-Be sure to add your OpenAI API Key to your `.env`.
+## Azure OpenAI Configuration
+Be sure to add your Azure OpenAI configuration to your `.env`. See the [Setup section](#setup) above for detailed instructions on configuring Azure OpenAI.
 
 ## Database Setup
 To push your schema changes to your Vercel Postgres database, run the following command.
@@ -123,6 +187,15 @@ Run the following command
 pnpm run dev
 ```
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+## Chrome Extension Setup Helper
+You can use the included setup script to check your Chrome extension configuration:
+```bash
+npm run setup-extension
+# or
+node setup-extension.js
+```
+This script will verify that all required files exist and provide installation instructions.
 
 ## Authors
 
