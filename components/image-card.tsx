@@ -13,13 +13,17 @@ import {
 import { Download, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function ImageCard({
   image,
   similarity,
+  onRemove,
 }: {
   image: DBImage;
   similarity?: number;
+  onRemove?: (id: string) => void;
 }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
@@ -42,7 +46,9 @@ export function ImageCard({
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e?: React.MouseEvent) => {
+    // Prevent triggering the morph dialog when clicking delete
+    e?.stopPropagation?.();
     if (isDeleting) return;
     if (
       !confirm(
@@ -52,27 +58,35 @@ export function ImageCard({
       return;
     setIsDeleting(true);
     try {
+      // Optimistically remove from UI immediately
+      onRemove?.(image.id);
       const response = await fetch(`/api/delete-image?id=${image.id}`, {
         method: "DELETE",
       });
       if (response.ok) {
+        toast.success("Image deleted");
+        // Keep server state in sync; UI already removed
         router.refresh();
       } else {
         const error = await response.json();
-        alert(`Failed to delete image: ${error.error || "Unknown error"}`);
+        toast.error(error.error || "Failed to delete image");
       }
     } catch (error) {
-      alert("Failed to delete image. Please try again.");
+      toast.error("Failed to delete image. Please try again.");
     } finally {
       setIsDeleting(false);
     }
   };
 
+  const isPerfectMatch = similarity === 1;
   return (
     <Card
-      className="group relative overflow-hidden rounded-xl border-border/50 bg-card/50 backdrop-blur-sm 
-                   shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 
-                   transition-all duration-500 ease-out hover:scale-[1.02] hover:-translate-y-1"
+      className={cn(
+        "group relative overflow-hidden rounded-xl border-border/50 bg-card/50 backdrop-blur-sm",
+        "shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10",
+        "transition-all duration-500 ease-out hover:scale-[1.02] hover:-translate-y-1",
+        isPerfectMatch && "border-2 border-blue-500"
+      )}
     >
       {/* Animated background gradient */}
       <div
@@ -88,6 +102,8 @@ export function ImageCard({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 
                              transition-all duration-200 backdrop-blur-sm border border-white/20
                              hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -97,14 +113,17 @@ export function ImageCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem
-              onClick={handleDownload}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload();
+              }}
               className="focus:bg-muted/50"
             >
               <Download className="h-4 w-4 mr-2" />
               Download
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={handleDelete}
+              onClick={(e) => handleDelete(e as unknown as React.MouseEvent)}
               disabled={isDeleting}
               className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 
                        focus:bg-red-50 dark:focus:bg-red-950 transition-colors"

@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePendingImages } from "@/lib/hooks/pending-images";
 import { nanoid } from "nanoid";
+import { toast } from "sonner";
 
 export function FileUpload() {
   const { fileInputRef, handleFileSelect, fileName, error, clearFile } =
@@ -70,8 +71,9 @@ export function FileUpload() {
       }
 
       setUploadSuccess(true);
+      toast.success("Image uploaded and processed");
       clearFile(); // Clear file after successful upload
-      // Update optimistic entry to processed with remote URL and details
+      // Update optimistic entry to processed with remote URL and details (no reload needed)
       pending.update(tempId, {
         status: "processed",
         url: result?.image?.url || objectUrl,
@@ -79,11 +81,12 @@ export function FileUpload() {
         description: result?.image?.description,
         finalId: result?.image?.id,
       });
-      // Allow a small delay for DB to be revalidated, then refresh
+      // Refresh server components in background; UI already updated locally
       router.refresh();
     } catch (err: any) {
       console.error("Upload error:", err);
       setUploadError(err.message || "Failed to upload image");
+      toast.error(err.message || "Failed to upload image");
       // mark last optimistic as failed
       // (a more robust impl would track by tempId in a closure)
       // Here we clear all local ones older than 5 minutes

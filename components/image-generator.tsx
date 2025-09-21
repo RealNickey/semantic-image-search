@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { Alert } from "./ui/alert";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
@@ -39,6 +40,7 @@ export function ImageGenerator() {
       }
 
       setSuccess(true);
+      toast.success("Image generated and saved");
       setPrompt(""); // Clear prompt after successful generation
       // refresh server components to show the new image
       router.refresh();
@@ -50,6 +52,7 @@ export function ImageGenerator() {
         errorMsg = error.message;
       }
       setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setGenerating(false);
     }

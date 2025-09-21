@@ -15,6 +15,7 @@ import {
   MotionConfig,
   Transition,
   Variant,
+  LayoutGroup,
 } from "framer-motion";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,9 @@ function MorphingDialogProvider({
 
   return (
     <MorphingDialogContext.Provider value={contextValue}>
-      <MotionConfig transition={transition}>{children}</MotionConfig>
+      <LayoutGroup id={uniqueId}>
+        <MotionConfig transition={transition}>{children}</MotionConfig>
+      </LayoutGroup>
     </MorphingDialogContext.Provider>
   );
 }
@@ -232,9 +235,12 @@ function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
   if (!mounted) return null;
 
   return createPortal(
-    <AnimatePresence initial={false} mode="sync">
+    <AnimatePresence initial={false} mode="popLayout">
       {isOpen && (
-        <>
+        <motion.div
+          key={`dialog-root-${uniqueId}`}
+          className="fixed inset-0 z-50"
+        >
           <motion.div
             key={`backdrop-${uniqueId}`}
             className="fixed inset-0 h-full w-full bg-white/40 backdrop-blur-sm dark:bg-black/40"
@@ -245,7 +251,7 @@ function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             {children}
           </div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body
