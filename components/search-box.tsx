@@ -39,6 +39,12 @@ export function SearchBox({
     } else {
       params.delete("q");
     }
+    // Cache last query locally for instant back/forward feel
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("lastQuery", term);
+      }
+    } catch {}
     startTransition &&
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
@@ -99,7 +105,7 @@ export function SearchBox({
           )}
         </div>
       </div>
-      
+
       {!isValid && (
         <div className="text-xs text-destructive animate-in slide-in-from-top-1 duration-200">
           Query must be 3 characters or longer

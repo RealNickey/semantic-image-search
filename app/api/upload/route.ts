@@ -71,8 +71,9 @@ export async function POST(request: NextRequest) {
       value: result.object.image.title + "\n" + result.object.image.description,
     });
     // 4. Save to database
+    const newId = nanoid();
     await db.insert(images).values({
-      id: nanoid(),
+      id: newId,
       title: result.object.image.title,
       description: result.object.image.description,
       path: url,
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       image: {
+        id: newId,
         url,
         title: result.object.image.title,
         description: result.object.image.description,
