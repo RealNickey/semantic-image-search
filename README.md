@@ -17,8 +17,7 @@ Semantic Image Search enables users to find images using natural language querie
 
 ## Block Diagram
 
-[Block Diagram Placeholder]
+![WhatsApp Image 2025-09-22 at 21 09 17_5757a136](https://github.com/user-attachments/assets/08de39eb-aa27-4238-9e30-72895510e523)
 
 ## Screenshots
-
-[Screenshot Placeholder]
+<img width="1920" height="1440" alt="987shots_so" src="https://github.com/user-attachments/assets/30b4bc01-0581-4816-8504-6ecbfef46d7e" />
